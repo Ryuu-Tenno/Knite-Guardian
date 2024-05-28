@@ -77,32 +77,32 @@ public:
 	{
 		// initialize variables...............................
 		// player variables
-		player_x = ScreenWidth() / 3 - 16.f;
-		player_y = ScreenHeight() / 2 - 16.f;
-		player_d = face_down;	// sprite facing
+		player_x = ScreenWidth() / 2 - 16.f;
+		player_y = ScreenHeight() / 3 * 2 - 16.f;
+		player_d = face_up;	// sprite facing
 		player_h = 12;	// temp value for testing purposes
 		player_spd = 70;
 		has_shield = true;	// may set to false later for player to pick up an item
 
 		// enemy variables
 		enemy_1x = ScreenWidth() / 2 - 16.f;
-		enemy_1y = ScreenHeight() / 2 - 16.f;
-		enemy_1d = 0;	// sprite starting facing
+		enemy_1y = ScreenHeight() / 3 - 16.f;
+		enemy_1d = 64;	// sprite starting facing
 		enemy_1h = 12;
 		enemy_1_spd = 65;
 		view_1 = 100;
 		//enemy_1y = enemy_1y;
 		
-		//enemy_2x = ScreenWidth() / 3 - 16.f;
-		//enemy_2y = ScreenHeight() / 2 - 16.f;
-		//enemy_3x = ScreenWidth() / 3 * 2 - 16.f;
-		//enemy_3y = ScreenHeight() / 2 - 16.f;
-		//enemy_2d = 32;	// sprite starting facing
-		//enemy_3d = 96;	// sprite starting facing
-		//enemy_2h = 12;
-		//enemy_3h = 12;
-		//enemy_2_spd = 75;
-		//enemy_3_spd = 85;
+		enemy_2x = ScreenWidth() / 3 - 16.f;
+		enemy_2y = ScreenHeight() / 2 - 16.f;
+		enemy_3x = ScreenWidth() / 3 * 2 - 16.f;
+		enemy_3y = ScreenHeight() / 2 - 16.f;
+		enemy_2d = 32;	// sprite starting facing
+		enemy_3d = 96;	// sprite starting facing
+		enemy_2h = 12;
+		enemy_3h = 12;
+		enemy_2_spd = 75;
+		enemy_3_spd = 85;
 		//view_2 = 100;
 		//view_3 = 100;
 
@@ -130,8 +130,8 @@ public:
 	void SetupEnemy()
 	{
 		DrawPartialDecal({ enemy_1x, enemy_1y }, { 32,32 }, npc, { enemy_1d + 0.f,32 }, { 32,32 });	// red
-		//DrawPartialDecal({ enemy_2x, enemy_2y }, { 32,32 }, npc, { enemy_2d + 0.f,64 }, { 32,32 });	// blue
-		//DrawPartialDecal({ enemy_3x, enemy_3y }, { 32,32 }, npc, { enemy_3d + 0.f,96 }, { 32,32 });	// purple
+		DrawPartialDecal({ enemy_2x, enemy_2y }, { 32,32 }, npc, { enemy_2d + 0.f,64 }, { 32,32 });	// blue
+		DrawPartialDecal({ enemy_3x, enemy_3y }, { 32,32 }, npc, { enemy_3d + 0.f,96 }, { 32,32 });	// purple
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
@@ -356,6 +356,9 @@ public:
 		//	enemy_1x -= enemy_1_spd * fElapsedTime;
 		//}
 
+		// enemy view distance
+		// will rearrange and adjust this code later
+		// code for enemies will be merged into an `Enemy Class` so as to reduce redundancy
 		const bool EnemyInRangeOfPlayer = viewRadius(player_x, enemy_1x, player_y, enemy_1y) < view_1;
 		const bool EnemyRightOfPlayer = enemy_1x > player_x;
 		const bool EnemyLeftOfPlayer = enemy_1x < player_x;
@@ -364,21 +367,25 @@ public:
 		
 		if (EnemyRightOfPlayer && EnemyInRangeOfPlayer)
 		{
+			enemy_1d = 96;
 			enemy_1x -= enemy_1_spd * fElapsedTime;
 			//left;
 		}
 		if (EnemyLeftOfPlayer && EnemyInRangeOfPlayer)
 		{
+			enemy_1d = 32;
 			enemy_1x += enemy_1_spd * fElapsedTime;
 			//right;
 		}
 		if (EnemyAbovePlayer && EnemyInRangeOfPlayer)
 		{
+			enemy_1d = 64;
 			enemy_1y += enemy_1_spd * fElapsedTime;
 			//up;
 		}
 		if (EnemyBelowPlayer && EnemyInRangeOfPlayer)
 		{
+			enemy_1d = 0;
 			enemy_1y -= enemy_1_spd * fElapsedTime;
 			//down;
 		}
@@ -387,23 +394,6 @@ public:
 		//{
 		//	//enemy_1x -= enemy_1_spd * fElapsedTime;
 		//	//left;
-		//}
-
-		//if (player_x < enemy_1x)
-		//{
-		//	enemy_1x -= enemy_1_spd * fElapsedTime;
-		//}
-		//if (player_x > enemy_1x)
-		//{
-		//	enemy_1x += enemy_1_spd * fElapsedTime;
-		//}
-		//if (player_y < enemy_1y)
-		//{
-		//	enemy_1y -= enemy_1_spd * fElapsedTime;
-		//}
-		//if (player_y > enemy_1y)
-		//{
-		//	enemy_1y += enemy_1_spd * fElapsedTime;
 		//}
 
 		// temp code for testing purposes
