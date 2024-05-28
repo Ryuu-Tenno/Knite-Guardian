@@ -356,28 +356,55 @@ public:
 		//	enemy_1x -= enemy_1_spd * fElapsedTime;
 		//}
 
-		if (viewRadius(player_x, enemy_1x, player_y, enemy_1y) > (enemy_1x + view_1))
-		{
-			//enemy_1x -= enemy_1_spd * fElapsedTime;
-			//left;
-		}
-
-		if (player_x < enemy_1x)
+		const bool EnemyInRangeOfPlayer = viewRadius(player_x, enemy_1x, player_y, enemy_1y) < view_1;
+		const bool EnemyRightOfPlayer = enemy_1x > player_x;
+		const bool EnemyLeftOfPlayer = enemy_1x < player_x;
+		const bool EnemyAbovePlayer = enemy_1y < player_y;
+		const bool EnemyBelowPlayer = enemy_1y > player_y;
+		
+		if (EnemyRightOfPlayer && EnemyInRangeOfPlayer)
 		{
 			enemy_1x -= enemy_1_spd * fElapsedTime;
+			//left;
 		}
-		if (player_x > enemy_1x)
+		if (EnemyLeftOfPlayer && EnemyInRangeOfPlayer)
 		{
 			enemy_1x += enemy_1_spd * fElapsedTime;
+			//right;
 		}
-		if (player_y < enemy_1y)
-		{
-			enemy_1y -= enemy_1_spd * fElapsedTime;
-		}
-		if (player_y > enemy_1y)
+		if (EnemyAbovePlayer && EnemyInRangeOfPlayer)
 		{
 			enemy_1y += enemy_1_spd * fElapsedTime;
+			//up;
 		}
+		if (EnemyBelowPlayer && EnemyInRangeOfPlayer)
+		{
+			enemy_1y -= enemy_1_spd * fElapsedTime;
+			//down;
+		}
+
+		//if (viewRadius(player_x, enemy_1x, player_y, enemy_1y) > (enemy_1x + view_1))
+		//{
+		//	//enemy_1x -= enemy_1_spd * fElapsedTime;
+		//	//left;
+		//}
+
+		//if (player_x < enemy_1x)
+		//{
+		//	enemy_1x -= enemy_1_spd * fElapsedTime;
+		//}
+		//if (player_x > enemy_1x)
+		//{
+		//	enemy_1x += enemy_1_spd * fElapsedTime;
+		//}
+		//if (player_y < enemy_1y)
+		//{
+		//	enemy_1y -= enemy_1_spd * fElapsedTime;
+		//}
+		//if (player_y > enemy_1y)
+		//{
+		//	enemy_1y += enemy_1_spd * fElapsedTime;
+		//}
 
 		// temp code for testing purposes
 		if (GetKey(olc::Key::SPACE).bPressed)
