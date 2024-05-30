@@ -24,15 +24,14 @@ public:
 	int face_left = 96;
 
 	// player's values
-	float player_x;		// x-coordinate
-	float player_y;		// y-coordinate
+	float player_x, player_x2;		// x-coordinate; includes collision coords
+	float player_y, player_y2;		// y-coordinate
 	float player_d;		// d = direction; sprite facing
 	int player_h;		// health
 	int player_spd;		// speed
 	bool has_shield;	// checks if player has a shield
 	bool weapon_1;		// checks if player has a weapon
 	bool item_1;		// checks if player has an item; may end up getting replaced by more weapons instead
-	int player_x1, player_x2, player_y1, player_y2;		// collision box for player; may change to circle later, unknown at this time
 
 	// enemy values
 	// note: may seem redundant here, but these may change in the future with custom names for each type of enemy
@@ -81,22 +80,21 @@ public:
 		// initialize variables...............................
 		// player variables
 		player_x = ScreenWidth() / 2 - 16.f;
+		player_x2 = player_x + 32.f;
 		player_y = ScreenHeight() / 3 * 2 - 16.f;
+		player_y2 = player_y + 32.f;
 		player_d = face_up;	// sprite facing
-		player_h = 12;	// temp value for testing purposes
+		player_h = 100;	// temp value for testing purposes
 		player_spd = 70;
 		has_shield = true;	// may set to false later for player to pick up an item
 
-		player_x1 = player_x;
-		player_x2 = player_x + 32.f;
-		player_y1 = player_y;
-		player_y2 = player_y + 32.f;
+		//player_x1 = player_x;
 
 		// enemy variables
 		enemy_1x = ScreenWidth() / 2 - 16.f;
 		enemy_1y = ScreenHeight() / 3 - 16.f;
 		enemy_1d = 64;	// sprite starting facing
-		enemy_1h = 12;
+		enemy_1h = 100;
 		enemy_1_spd = 65;
 		view_1 = 100;
 		//enemy_1y = enemy_1y;
@@ -163,11 +161,12 @@ public:
 		// AI movement
 		bool makesAMove = rand() % 100 >= 2;
 
-		// Running the game...................................
+		// Running the game ..................................
 		SetupEnemy();
 		SetupPlayer();
 
-		// Player Controls......................................
+		// ================= Player Controls =================
+		// Movement ..........................................
 		// move left
 		if (GetKey(olc::Key::A).bHeld)
 		{
@@ -224,15 +223,27 @@ public:
 				player_y = ScreenHeight() - 32;
 			}
 		}
+
+		// Actions ...........................................
 		// Defend/Block
-		if (GetKey(olc::Key::SPACE).bPressed)
+		if (has_shield == true)
 		{
-			std::cout << "blocked attack" << std::endl;
+			if (GetKey(olc::Key::SPACE).bPressed)
+			{
+				std::cout << "attack blocked" << std::endl;
+			}
+		}
+		else
+		{
+			if (GetKey(olc::Key::SPACE).bPressed)
+			{
+				std::cout << "blocked *1* point of damage" << std::endl;
+			}
 		}
 		// Attack
 		if (GetKey(olc::Key::F).bPressed)
 		{
-			std::cout << "attacked" << std::endl;
+			std::cout << "hit the enemy" << std::endl;
 		}
 
 		// speed boost for testing purposes
@@ -393,11 +404,32 @@ public:
 		//	//left;
 		//}
 
-		// PvE collision test
+		// PvE collision
 		if (enemy_1x >= player_x && enemy_1x <= player_x + 32.f && enemy_1y >= player_y && enemy_1y <= player_y + 32.f)
 		{
 			std::cout << "testing" << std::endl;
 		}
+		// attempting collision box test
+		// left
+		//if (enemy_1x - enemy_1_spd * fElapsedTime >= player_x)
+		//{
+		//	enemy_1x - player_x + 32.f;
+		//}
+		//// right
+		//if (enemy_1x + enemy_1_spd * fElapsedTime <= player_x)
+		//{
+		//	enemy_1x + player_x;
+		//}
+		//// up
+		//if (enemy_1y - enemy_1_spd * fElapsedTime >= player_y)
+		//{
+		//	enemy_1y - player_y + 32.f;
+		//}
+		//// down
+		//if (enemy_1y <= player_y)
+		//{
+		//	enemy_1y + player_y + 32.f;
+		//}
 
 		// determining game ending
 		// player death
