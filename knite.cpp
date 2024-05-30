@@ -32,6 +32,7 @@ public:
 	bool has_shield;	// checks if player has a shield
 	bool weapon_1;		// checks if player has a weapon
 	bool item_1;		// checks if player has an item; may end up getting replaced by more weapons instead
+	int player_x1, player_x2, player_y1, player_y2;		// collision box for player; may change to circle later, unknown at this time
 
 	// enemy values
 	// note: may seem redundant here, but these may change in the future with custom names for each type of enemy
@@ -44,11 +45,13 @@ public:
 	int view_1/*x, view_1y*/;
 	//int view_2x, view_2y;
 	//int view_3x, view_3y;			// view distance
+	int enemy_1_x1, enemy_1_x2, enemy_1_y1, enemy_1_y2;		// collision box for enemies; see player for related notes
 
 	// initialize sprites --------------------------------------------------------------------
 	olc::Decal* npc;
 	olc::Decal* heart;
 	olc::Decal* shield;
+	olc::Decal* terrain;
 
 	// other variables
 	enum direction { stop, up, right, down, left };		// directions match sprite facing in sprite sheet
@@ -84,6 +87,11 @@ public:
 		player_spd = 70;
 		has_shield = true;	// may set to false later for player to pick up an item
 
+		player_x1 = player_x;
+		player_x2 = player_x + 32.f;
+		player_y1 = player_y;
+		player_y2 = player_y + 32.f;
+
 		// enemy variables
 		enemy_1x = ScreenWidth() / 2 - 16.f;
 		enemy_1y = ScreenHeight() / 3 - 16.f;
@@ -92,6 +100,11 @@ public:
 		enemy_1_spd = 65;
 		view_1 = 100;
 		//enemy_1y = enemy_1y;
+
+		enemy_1_x1 = enemy_1x -16;
+		enemy_1_x2 = enemy_1x + 16;
+		enemy_1_y1 = enemy_1y - 16;
+		enemy_1_y2 = enemy_1y + 16;
 		
 		enemy_2x = ScreenWidth() / 3 - 16.f;
 		enemy_2y = ScreenHeight() / 2 - 16.f;
@@ -110,6 +123,7 @@ public:
 		npc = new olc::Decal(new olc::Sprite("art/npc.png"));			// contains 6 rows of 4 facings
 		heart = new olc::Decal(new olc::Sprite("art/health.png"));		// 5 pictures of hearts
 		shield = new olc::Decal(new olc::Sprite("art/shield.png"));		// 4 images showing player is protected, based on facing
+		terrain = new olc::Decal(new olc::Sprite("art/terrain.png"));	// terrain tileset for game world
 
 		return true;
 	}
@@ -153,101 +167,83 @@ public:
 		SetupEnemy();
 		SetupPlayer();
 
-		// moving player......................................
+		// Player Controls......................................
+		// move left
+		if (GetKey(olc::Key::A).bHeld)
 		{
-			// move left
-			if (GetKey(olc::Key::A).bHeld)
+			// wall collision
+			if (player_x - player_spd * fElapsedTime >= 0)
 			{
-				// wall collision
-				if (player_x - player_spd * fElapsedTime >= 0)
-				{
-					player_x -= player_spd * fElapsedTime;
-					player_d = 96;
-				}
-				else
-				{
-					player_x = 1;
-				}
-			}
-			// move right
-			if (GetKey(olc::Key::D).bHeld)
-			{
-				// wall collision
-				if (player_x + player_spd * fElapsedTime <= ScreenWidth() - 31)
-				{
-					player_x += player_spd * fElapsedTime;
-					player_d = 32;
-				}
-				else
-				{
-					player_x = ScreenWidth() - 32;
-				}
-			}
-			// move up
-			if (GetKey(olc::Key::W).bHeld)
-			{
-				// wall collision
-				if (player_y - player_spd * fElapsedTime >= 0)
-				{
-					player_y -= player_spd * fElapsedTime;
-					player_d = 0;
-				}
-				else
-				{
-					player_y = 1;
-				}
-			}
-			// move down
-			if (GetKey(olc::Key::S).bHeld)
-			{
-				// wall collision
-				if (player_y + player_spd * fElapsedTime <= ScreenHeight() - 31)
-				{
-					player_y += player_spd * fElapsedTime;
-					player_d = 64;
-				}
-				else
-				{
-					player_y = ScreenHeight() - 32;
-				}
-			}
-			// speed boost for testing purposes
-			if (GetKey(olc::Key::SHIFT).bHeld)
-			{
-				player_spd = 200;
+				player_x -= player_spd * fElapsedTime;
+				player_d = 96;
 			}
 			else
 			{
-				player_spd = 70;
+				player_x = 1;
 			}
 		}
-
-		// player facing test.................................
+		// move right
+		if (GetKey(olc::Key::D).bHeld)
 		{
-			// may or may not keep these controls; they're neat, but primarily a test (and mostly successful imo)
-			// look left
-			if (GetKey(olc::Key::A).bPressed)
+			// wall collision
+			if (player_x + player_spd * fElapsedTime <= ScreenWidth() - 31)
 			{
-				player_d = 96;
-			}
-			// look right
-			if (GetKey(olc::Key::D).bPressed)
-			{
+				player_x += player_spd * fElapsedTime;
 				player_d = 32;
 			}
-			// look up
-			if (GetKey(olc::Key::W).bPressed)
+			else
 			{
-				player_d = 0;
-			}
-			// look down
-			if (GetKey(olc::Key::S).bPressed)
-			{
-				player_d = 64;
-
+				player_x = ScreenWidth() - 32;
 			}
 		}
+		// move up
+		if (GetKey(olc::Key::W).bHeld)
+		{
+			// wall collision
+			if (player_y - player_spd * fElapsedTime >= 0)
+			{
+				player_y -= player_spd * fElapsedTime;
+				player_d = 0;
+			}
+			else
+			{
+				player_y = 1;
+			}
+		}
+		// move down
+		if (GetKey(olc::Key::S).bHeld)
+		{
+			// wall collision
+			if (player_y + player_spd * fElapsedTime <= ScreenHeight() - 31)
+			{
+				player_y += player_spd * fElapsedTime;
+				player_d = 64;
+			}
+			else
+			{
+				player_y = ScreenHeight() - 32;
+			}
+		}
+		// Defend/Block
+		if (GetKey(olc::Key::SPACE).bPressed)
+		{
+			std::cout << "blocked attack" << std::endl;
+		}
+		// Attack
+		if (GetKey(olc::Key::F).bPressed)
+		{
+			std::cout << "attacked" << std::endl;
+		}
 
+		// speed boost for testing purposes
+		if (GetKey(olc::Key::SHIFT).bHeld)
+		{
+			player_spd = 200;
+		}
+		else
+		{
+			player_spd = 70;
+		}
 
 		// moving enemy 1.....................................
 		
@@ -359,6 +355,7 @@ public:
 		// enemy view distance
 		// will rearrange and adjust this code later
 		// code for enemies will be merged into an `Enemy Class` so as to reduce redundancy
+		// copy this block design if I need a circle collision box with the player and enemies
 		const bool EnemyInRangeOfPlayer = viewRadius(player_x, enemy_1x, player_y, enemy_1y) < view_1;
 		const bool EnemyRightOfPlayer = enemy_1x > player_x;
 		const bool EnemyLeftOfPlayer = enemy_1x < player_x;
@@ -396,11 +393,10 @@ public:
 		//	//left;
 		//}
 
-		// temp code for testing purposes
-		if (GetKey(olc::Key::SPACE).bPressed)
+		// PvE collision test
+		if (enemy_1x >= player_x && enemy_1x <= player_x + 32.f && enemy_1y >= player_y && enemy_1y <= player_y + 32.f)
 		{
-			std::cout << "took damage" << std::endl;
-			player_h--;
+			std::cout << "testing" << std::endl;
 		}
 
 		// determining game ending
