@@ -4,7 +4,8 @@
 //		small game idea to test out how well I can make a game via Javidx9's Pixel Game Engine
 //----------------------------------------------------------------------------------------------------------------------------------------
 #define OLC_PGE_APPLICATION
-#include "../../olcPixelGameEngine 2.25.h"
+#include "../../PGE/olcUTIL_Geometry2D.h"
+#include "../../PGE/olcPixelGameEngine 2.25.h"
 #include <iostream>
 
 class KniteGuard : public olc::PixelGameEngine
@@ -22,6 +23,13 @@ public:
 	int face_right = 32;
 	int face_down = 64;
 	int face_left = 96;
+	float wall_x, wall_x2, wall_y, wall_y2;
+
+	//struct Wall
+	//{
+	//	olc::vf2d pos{ 0,0 };
+	//	olc::vi2d size{ 32,32 };
+	//};
 
 	// player's values
 	float player_x, player_x2;		// x-coordinate; includes collision coords
@@ -45,6 +53,11 @@ public:
 	//int view_2x, view_2y;
 	//int view_3x, view_3y;			// view distance
 	int enemy_1_x1, enemy_1_x2, enemy_1_y1, enemy_1_y2;		// collision box for enemies; see player for related notes
+
+	struct Enemy
+	{
+		// fill out soon
+	};
 
 	// initialize sprites --------------------------------------------------------------------
 	olc::Decal* npc;
@@ -78,6 +91,12 @@ public:
 	bool OnUserCreate() override
 	{
 		// initialize variables...............................
+		// general variables
+		wall_x = ScreenWidth() / 2 - 16.f;
+		wall_x2 = wall_x + 32.f;
+		wall_y = ScreenHeight() / 2 - 16.f;
+		wall_y2 = wall_y + 32.f;
+
 		// player variables
 		player_x = ScreenWidth() / 2 - 16.f;
 		player_x2 = player_x + 32.f;
@@ -146,6 +165,11 @@ public:
 		DrawPartialDecal({ enemy_3x, enemy_3y }, { 32,32 }, npc, { enemy_3d + 0.f,96 }, { 32,32 });	// purple
 	}
 
+	void SetupStage()
+	{
+		DrawPartialDecal({ wall_x, wall_y }, {32,32}, terrain, {0,0}, {32,32});
+	}
+
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		// draw canvas
@@ -162,8 +186,9 @@ public:
 		bool makesAMove = rand() % 100 >= 2;
 
 		// Running the game ..................................
-		SetupEnemy();
+		//SetupEnemy();
 		SetupPlayer();
+		SetupStage();
 
 		// ================= Player Controls =================
 		// Movement ..........................................
@@ -194,6 +219,17 @@ public:
 			{
 				player_x = ScreenWidth() - 32;
 			}
+
+			// tile collision
+			//if (player_x + player_spd * fElapsedTime >= wall_x)
+			//{
+			//	player_x += player_spd * fElapsedTime;
+			//	player_d = 32;
+			//}
+			//else
+			//{
+			//	player_x = wall_x - 32;
+			//}
 		}
 		// move up
 		if (GetKey(olc::Key::W).bHeld)
@@ -208,6 +244,17 @@ public:
 			{
 				player_y = 1;
 			}
+
+			// tile collision
+			//if (player_x - player_spd * fElapsedTime >= wall_y + 32)
+			//{
+			//	player_x -= player_spd * fElapsedTime;
+			//	player_d = 32;
+			//}
+			//else
+			//{
+			//	player_x = wall_y - 1;
+			//}
 		}
 		// move down
 		if (GetKey(olc::Key::S).bHeld)
@@ -223,6 +270,49 @@ public:
 				player_y = ScreenHeight() - 32;
 			}
 		}
+
+		// tile collision
+		// to the right
+		if (player_x + player_spd * fElapsedTime <= wall_x)
+		{
+			player_x += player_spd * fElapsedTime;
+			player_d = 32;
+		}
+		else
+		{
+			player_x = wall_x - 32;
+		}
+		// to the left
+		if (player_x - player_spd * fElapsedTime >= wall_x2)
+		{
+			player_x -= player_spd * fElapsedTime;
+			player_d = 32;
+		}
+		else
+		{
+			player_x = wall_x2;
+		}
+		// going up
+		if (player_y - player_spd * fElapsedTime <= wall_y2)
+		{
+			player_y -= player_spd * fElapsedTime;
+			player_d = 32;
+		}
+		else
+		{
+			player_y = wall_y2;
+		}
+		// going down
+		if (player_y + player_spd * fElapsedTime >= wall_y2)
+		{
+			player_y += player_spd * fElapsedTime;
+			player_d = 32;
+		}
+		else
+		{
+			player_y = wall_y2 - 32;
+		}
+
 
 		// Actions ...........................................
 		// Defend/Block
@@ -405,10 +495,17 @@ public:
 		//}
 
 		// PvE collision
-		if (enemy_1x >= player_x && enemy_1x <= player_x + 32.f && enemy_1y >= player_y && enemy_1y <= player_y + 32.f)
+		//if (enemy_1x >= player_x && enemy_1x <= player_x + 32.f && enemy_1y >= player_y && enemy_1y <= player_y + 32.f)
+		//{
+		//	std::cout << "testing" << std::endl;
+		//}
+
+		// Block collision
+		if (wall_x >= player_x && wall_x <= player_x + 32.f && wall_y >= player_y && wall_y <= player_y + 32.f)
 		{
-			std::cout << "testing" << std::endl;
+			std::cout << "checking" << std::endl;
 		}
+
 		// attempting collision box test
 		// left
 		//if (enemy_1x - enemy_1_spd * fElapsedTime >= player_x)
